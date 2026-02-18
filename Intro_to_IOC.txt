@@ -1,0 +1,222 @@
+public class Engine{
+  public void start(){
+    System.out.println("Engine is starting...");
+  }
+}
+
+class Car{
+  Engine engine=new Engine();
+  public void startCar(){
+    engine.start();
+  }
+}
+
+-> here Car is dependent on engine.
+-> This is called tight coupling.
+-> To avoid this we can use dependency injection.
+
+-> if tommorrow we get some new engine we need to change the car class also.
+
+-> this is bad design.
+. since hard to test
+. since hard to maintain
+. since to extend we need to change the existing code.
+
+
+-------- Inversion of control ---------
+
+-> IoC means: the class does NOT decide what object it needs or creates ,
+it receives it from outside
+
+-> IoC is a concept, DI is a technique to achieve that concept.
+
+-> Engine engine : it is dependency for car class.
+-> Dependency injection : we are injecting the dependency from outside the class.
+
+-> Control :who creates the object
+-> Inversion : we are inverting the control of creating the object from the class to some other class.
+
+-> so while creating car it self we will pass the engine object to it.
+-> this is called constructor injection.
+-> we have Engine interface and we have to implement it in diff engines like petrol,coal etc
+-> Indirectly we are following the open closed principle since we are not changing the existing code 
+but we are adding new code to it.
+
+-------------------Constructor injection-------------------
+
+            class Car{
+              Engine engine;
+              public Car(Engine engine){
+                this.engine = engine;
+              }
+              public void startCar(){
+                engine.start();
+              }
+            }
+
+-> this is called loose coupling.
+-> someone else does this
+Engine engine = new Engine();
+Car car = new Car(engine);
+
+
+--------------------Setter injection-------------------
+
+class Car{
+  Engine engine;
+  public void setEngine(Engine engine){
+    this.engine = engine;
+  }
+  public void startCar(){
+    engine.start();
+  }
+}
+
+-> here we are using setter method to inject the dependency.
+-> someone else does this
+Engine engine = new Engine();
+Car car = new Car();
+car.setEngine(engine);
+
+-> when to use it?
+. when the dependency is optional
+. when we want to change the dependency at runtime.
+
+
+-------------------Field injection-------------------
+
+class Car{
+  Engine engine;
+  public void startCar(){
+    engine.start();
+  }
+}
+
+Car car = new Car();
+car.engine = new Engine();
+-> here we are directly injecting the dependency into the field.
+-> this is not recommended 
+1.since it violates the encapsulation principle,anyone can change the Car class and loose the control.
+2.sometime we create car object but forget to inject the engine object then we will get null pointer exception.
+
+
+--------------------Field injection with spring-------------------
+
+interface Engine{
+  void start();
+}
+
+@Component
+class PetrolEngine implements Engine{
+  public void start(){
+    System.out.println("Petrol engine is starting...");
+  }
+}
+
+@Component
+public class Car{
+  
+  Engine engine;
+  public Car(Engine engine){
+    this.engine = engine;
+  }
+  public void startCar(){
+    engine.start();
+  }
+}
+
+psvm{
+  ApplicationContext context = new AnnotationConfigApplicationContext(pacakagename we need to give here);
+  Car car = context.getBean(Car.class);
+  car.startCar();
+}
+
+-> so here we have only one engine so no prob. what if we have multiple engines?
+@Component
+public class PetrolEngine implements Engine{
+  public void start(){
+    System.out.println("Petrol engine is starting...");
+  }
+}
+
+@Component
+public class DieselEngine implements Engine{
+  public void start(){
+    System.out.println("Diesel engine is starting...");
+  }
+}
+
+psvm{
+  ApplicationContext context = new AnnotationConfigApplicationContext(pacakagename we need to give here);
+  Car car = context.getBean(Car.class);
+  car.startCar();
+}
+
+-> here we will get an error since spring does not know which engine to inject.
+
+Option 1:
+-> we use primary annotation to tell spring which bean to inject when there are multiple beans of the same type.
+we put @Primary annotation on the top of the @Component annotation of the bean which we want to inject by default.
+
+Option 2:
+-> we can also use @Qualifier annotation to tell spring which bean to inject when there are multiple beans of the same type.
+we put @Qualifier annotation on the top of the @Component annotation of the bean which we want
+
+-> engine codes doent nt chamge
+
+@Component
+public class Car{
+  
+  Engine engine;
+  public Car(@Qualifier("petrolEngine") Engine engine){
+    this.engine = engine;
+  }
+  public void startCar(){
+    engine.start();
+  }
+}
+
+
+option 3:
+-> Disadvantage 1 — Hardcoding -Bean name is written in code
+-> Disadvantage 2 — Not flexible - If we want to change the bean to inject
+we need to change the code and recompile it.
+-> we use @profile annotation to tell spring which bean to inject when there are multiple beans of the same type.
+-> we put @Profile annotation on the top of the @Component annotation of the bean which we want to inject in a specific profile.
+
+@Profile("coal");
+@Component
+public class CoalEngine implements Engine{
+  public void start(){
+    System.out.println("Coal engine is starting...");
+  }
+}
+
+@Profile("petrol");
+@Component
+public class PetrolEngine implements Engine{
+  public void start(){
+    System.out.println("Petrol engine is starting...");
+  }
+}
+
+psvm{
+  System.setProperty("spring.profiles.active", "coal");
+  ApplicationContext context = new AnnotationConfigApplicationContext(pacakagename we need to give here);
+  Car car = context.getBean(Car.class);
+  car.startCar();
+}
+
+
+
+
+1️⃣ Container starts
+2️⃣ Sees @Profile("coal") CaolEngine → CREATE
+3️⃣ Sees @Profile("petrol") PetrolEngine → SKIP
+4️⃣ Only one Engine bean exists
+5️⃣ Car asks for Engine → gets CoalEngine
+
+-> so still if we set all the profiles active then we will get an error since spring does not know which bean to inject.
+  System.setProperty("spring.profiles.active", "coal", "petrol");
+
+
