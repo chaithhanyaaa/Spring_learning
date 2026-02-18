@@ -1,0 +1,90 @@
+-> Firstly spring is a framework that creates the objects for you.
+
+-> what we already do in core java is we create the objects and inject the dependencies manually.
+-> but in real backend dev we have 100s of classes and 100s of dependencies then it is not possible to do it manually.
+1.Too many new keywords
+2.Hard to manage dependencies
+3.Hard to change implementations
+4.Hard to test consistently
+
+CONTAINER:
+-> a container is something that creates and manages the objects for you.
+-> it is responsible for creating the objects and injecting the dependencies.
+
+
+class container{
+  Car car;
+  public container(){
+    car = new Car();
+  }
+  public Car getCar(){
+    return car;
+  }
+}
+
+Container container = new Container();
+Car car = container.getCar();
+
+
+-> But this container fails 
+1.since its code grows fast
+2.HardCoded classes
+3.Hard to change implementations
+4.Hard to test consistently
+
+->Spring gives you a ready-made container that:
+1.Works for thousands of classes
+2.Supports configuration
+3.Manages lifecycle
+4.Supports DI automatically
+
+-> we have two main types of Container in spring
+1.ApplicationContext(advanced container)
+2.BeanFactory(basic container)
+
+implementation:
+
+@Component
+class SayHello{
+  public void sayHello(){
+    System.out.println("Hello");
+  }
+}
+
+psvm
+{
+  ApplicationContext context = new AnnotationConfigApplicationContext(pacakagename we need to give here);
+  SayHello object = context.getBean(SayHello.class);
+  object.sayHello();
+}
+
+-> why do we need to give package name here?
+-> because spring will scan the package and find the class with @Component annotation and create the object for it.
+-> we can also give the class name in which we  write 
+@Configuration
+@ComponentScan("pacakage name")
+public class AppConfig {
+  //empty
+}
+
+ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+-> A bean is an object that is created and managed by the Spring container
+
+
+--------------Spring vs Spring Boot----------------
+
+SPRING:
+-> Spring Framework is a core Java framework used to build enterprise-level applications.
+-> Its main purpose is to provide Inversion of Control (IoC) and Dependency Injection (DI) so that applications are loosely coupled, maintainable, and testable.
+-> In Spring, the developer has full control, but that control comes with a lot of manual configuration.
+The developer must explicitly define configuration classes, component scanning, bean creation, dependency wiring, and other infrastructure details.
+As the application grows, the amount of configuration also increases, making development slower and more complex.
+-> Spring is powerful and flexible, but it requires significant setup effort, especially for beginners.
+
+SPRING BOOT:
+-> Spring Boot is an extension of the Spring Framework that aims to reduce boilerplate code and configuration.
+-> It does not replace Spring; instead, it uses Spring internally and adds automation and sensible defaults.
+-> Spring Boot provides auto-configuration, which means it automatically configures the application based on the dependencies present in the classpath.
+-> With Spring Boot, developers can quickly create and run applications with minimal configuration, allowing them to focus more on business logic rather than setup.
+-> Spring Boot is ideal for microservices and rapid application development, while Spring Framework is better suited for complex applications that require fine-grained control over configuration.
+- git test
